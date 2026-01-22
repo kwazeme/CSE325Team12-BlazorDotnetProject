@@ -15,7 +15,7 @@
   * Ndarama Mark - develop-02
   * Ferrin Armstrong Mutuku - develop-03
   * Julius Yohanes Songopa - develop-04
-  * vacant develop-05
+  * Emmanuel Nzeh - develop-05
   * vacant - develop-06
   * Production - main
 * URL for Group Repo: https://github.com/kwazeme/CSE325Team12-BlazorDotnetProject.git
