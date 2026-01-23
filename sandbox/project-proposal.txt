@@ -1,29 +1,35 @@
 Project Proposal
+CSE325Team12
+Kwazeme Ogubie - develop-01
+Ndarama Mark - develop-02
+Ferrin Armstrong Mutuku - develop-03
+Julius Yohanes Songopa - develop-04
+Emmanuel Nzeh - develop-05
 
-1. Title: PropertyHub - Property Rental Management System
+1. Title: PropertyHub - Propoerty Rental Management System
 
 2. Project Overview
 
-The application provides property owners with a centralized system to organize property information, tenant details, and lease agreements. 
-Users can perform basic CRUD operations (Create, Read, Update, Delete) on properties, tenants, and leases—fundamental operations that showcase the capabilities of the Blazor framework.
+The application provides property owners with a centralized system to organize listing information, tenant details, and lease agreements. 
+Users can perform basic CRUD operations (Create, Read, Update, Delete) on listings, tenants, and leases—fundamental operations that showcase the capabilities of the Blazor framework.
 
 Problem Statement
-Property owners need a simple way to organize and track their rental properties and tenant information without using spreadsheets or multiple disconnected tools.
+Property owners need a simple way to organize and track their rental listings and tenant information without using spreadsheets or multiple disconnected tools.
 
  Target Users
-  Small property owners managing 1 5 rental properties
-  Property managers needing to track property and tenant information
+  Small listing owners managing 1-5 rental units
+  listing managers needing to track listing and tenant information
 
    
 3. Project Scope
 
 What's IN
 Core Features:
-•	User authentication (login/register for property owners)
-•	Property management (add, view, edit, delete properties with address and rent amount)
+•	User authentication (login/register for listing owners)
+•	listing management (add, view, edit, delete listings with address and rent amount)
 •	Tenant management (add, view, edit, delete tenant information)
-•	Lease management (create leases linking tenants to properties with start/end dates)
-•	Simple property list dashboard
+•	Lease management (create leases linking tenants to listings with start/end dates)
+•	Simple listing list dashboard
 •	Responsive design for desktop and mobile
 •	Form validation
 
@@ -34,7 +40,7 @@ Core Features:
 •	Advanced reporting or analytics
 •	Tenant screening
 •	Payment processing
-•	Multi user access or property sharing
+•	Multi user access or listing sharing
 •	Mobile app (web only, but responsive)
 
 4. App Features
@@ -45,15 +51,15 @@ Core Features:
 •	Users can create an account with email and password
 •	Users can log in with existing credentials
 •	Users remain logged in during their session
-•	User Story: "As a property owner, I want to create an account and log in so that my property data is private."
+•	User Story: "As a listing owner, I want to create an account and log in so that my listing data is private."
 
-2. Property Management (CRUD)
-•	Users can add new properties (address, city, state, rent amount, property type)
-•	Users can view a list of all their properties
-•	Users can view details of individual properties
-•	Users can edit property information
-•	Users can delete properties
-•	User Story: "As a property owner, I want to add and organize my rental properties so that I can keep track of them."
+2. listing Management (CRUD)
+•	Users can add new listings (address, city, state, rent amount, listing type)
+•	Users can view a list of all their listings
+•	Users can view details of individual listings
+•	Users can edit listing information
+•	Users can delete listings
+•	User Story: "As a listing owner, I want to add and organize my rental listings so that I can keep track of them."
 
 3. Tenant Management (CRUD)
 •	Users can add tenant information (name, email, phone number)
@@ -61,24 +67,24 @@ Core Features:
 •	Users can view individual tenant details
 •	Users can edit tenant information
 •	Users can delete tenant records
-•	User Story: "As a property owner, I want to maintain a list of my tenants with their contact information."
+•	User Story: "As a listing owner, I want to maintain a list of my tenants with their contact information."
 
 4. Lease Management (CRUD)
-•	Users can create leases by selecting a property and tenant
+•	Users can create leases by selecting a listing and tenant
 •	Users can specify lease start and end dates
 •	Users can view all active and inactive leases
 •	Users can view lease details
 •	Users can edit lease information
 •	Users can delete/end leases
-•	User Story: "As a property owner, I want to track which tenant rents which property and when their lease ends."
+•	User Story: "As a listing owner, I want to track which tenant rents which listing and when their lease ends."
 
 5. Technical Considerations
 
 Data Storage
 •	User data: Name, email, phone number, address, password
-•	Property data: Address, city, state, property type, rent amount
+•	listing data: Address, city, state, listing type, rent amount
 •	Tenant data: Name, email, phone number
-•	Lease data: Property ID, Tenant ID, lease start date, lease end date
+•	Lease data: listing ID, Tenant ID, lease start date, lease end date
 •	Database: SQLite with Entity Framework Core for ORM
 
  User Accounts & Authentication
@@ -99,7 +105,7 @@ Data Storage
 •	Authentication: ASP.NET Core Identity handles secure password hashing
 •	Data Validation: Server-side validation to prevent invalid input and SQL injection
 •	HTTPS: Required for deployed applications
-•	Access Control: Users only see their own properties and tenants
+•	Access Control: Users only see their own listings and tenants
 
 
 6. Project links
@@ -113,14 +119,14 @@ Week 1: Project Setup & Authentication
 •	Create basic page layout and navigation – D5
 •	Implement User model and registration – D2
 •	Implement form validation and error handling – D1
-•	Implement document uploads – D4
+•	Implement document uploads – D3
 
 Week 2: Core CRUD Operations
-•	Build Property management (Add, View, Edit, Delete) – D2
+•	Build listing management (Add, View, Edit, Delete) – D2
 •	Build Tenant management (Add, View, Edit, Delete) – D5
 •	Build Lease management (Create, View, Edit, Delete) – D3
 •	Build Maintenance management (Create, View, Edit, Delete) – D1
-•	Implement user login using ASP.NET Core Identity and Authentication middleware & Ensure data relationships are correct (Lease links Property and Tenant) – D4
+•	Implement user login using ASP.NET Core Identity Ensure data relationships are correct (Lease links listing and Tenant) – D4
 
 Week 3: Refinement & Deployment
 •	Responsive design testing and refinement – D2
