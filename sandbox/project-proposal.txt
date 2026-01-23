@@ -1,0 +1,138 @@
+Project Proposal
+
+1. Title: PropertyHub - Property Rental Management System
+
+2. Project Overview
+
+The application provides property owners with a centralized system to organize property information, tenant details, and lease agreements. 
+Users can perform basic CRUD operations (Create, Read, Update, Delete) on properties, tenants, and leases—fundamental operations that showcase the capabilities of the Blazor framework.
+
+Problem Statement
+Property owners need a simple way to organize and track their rental properties and tenant information without using spreadsheets or multiple disconnected tools.
+
+ Target Users
+  Small property owners managing 1 5 rental properties
+  Property managers needing to track property and tenant information
+
+   
+3. Project Scope
+
+What's IN
+Core Features:
+•	User authentication (login/register for property owners)
+•	Property management (add, view, edit, delete properties with address and rent amount)
+•	Tenant management (add, view, edit, delete tenant information)
+•	Lease management (create leases linking tenants to properties with start/end dates)
+•	Simple property list dashboard
+•	Responsive design for desktop and mobile
+•	Form validation
+
+ What's OUT
+•	Role based authorization (single owner role only)
+•	Rent payment tracking
+•	Email notifications
+•	Advanced reporting or analytics
+•	Tenant screening
+•	Payment processing
+•	Multi user access or property sharing
+•	Mobile app (web only, but responsive)
+
+4. App Features
+
+ Core Features (User Actions)
+
+1. User Registration & Authentication
+•	Users can create an account with email and password
+•	Users can log in with existing credentials
+•	Users remain logged in during their session
+•	User Story: "As a property owner, I want to create an account and log in so that my property data is private."
+
+2. Property Management (CRUD)
+•	Users can add new properties (address, city, state, rent amount, property type)
+•	Users can view a list of all their properties
+•	Users can view details of individual properties
+•	Users can edit property information
+•	Users can delete properties
+•	User Story: "As a property owner, I want to add and organize my rental properties so that I can keep track of them."
+
+3. Tenant Management (CRUD)
+•	Users can add tenant information (name, email, phone number)
+•	Users can view a list of all tenants
+•	Users can view individual tenant details
+•	Users can edit tenant information
+•	Users can delete tenant records
+•	User Story: "As a property owner, I want to maintain a list of my tenants with their contact information."
+
+4. Lease Management (CRUD)
+•	Users can create leases by selecting a property and tenant
+•	Users can specify lease start and end dates
+•	Users can view all active and inactive leases
+•	Users can view lease details
+•	Users can edit lease information
+•	Users can delete/end leases
+•	User Story: "As a property owner, I want to track which tenant rents which property and when their lease ends."
+
+5. Technical Considerations
+
+Data Storage
+•	User data: Name, email, phone number, address, password
+•	Property data: Address, city, state, property type, rent amount
+•	Tenant data: Name, email, phone number
+•	Lease data: Property ID, Tenant ID, lease start date, lease end date
+•	Database: SQLite with Entity Framework Core for ORM
+
+ User Accounts & Authentication
+•	Authentication: ASP.NET Core Identity with email/password registration and login
+•	Authorization: All users have the same permissions (single user role)
+•	Security: Passwords hashed with ASP.NET Core Identity
+
+ External Services
+•	None for now
+•	Future enhancements for map API
+
+ Device Compatibility
+•	Desktop & Tablet: Responsive design using Bootstrap
+•	Mobile: Touch friendly responsive interface
+•	Browsers: Chrome, Edge, Firefox, Safari
+
+ Basic Security
+•	Authentication: ASP.NET Core Identity handles secure password hashing
+•	Data Validation: Server-side validation to prevent invalid input and SQL injection
+•	HTTPS: Required for deployed applications
+•	Access Control: Users only see their own properties and tenants
+
+
+6. Project links
+ GitHub: https://github.com/kwazeme/CSE325Team12-BlazorDotnetProject/tree/main
+ Trello: https://trello.com/b/qziw0QeC/cse325-netsoftwaredevelopment
+
+Timeline & Deliverables
+
+Week 1: Project Setup & Authentication
+•	Set up Blazor Server project structure, configure Entity Framework Core and database – D4
+•	Create basic page layout and navigation – D5
+•	Implement User model and registration – D2
+•	Implement form validation and error handling – D1
+•	Implement document uploads – D4
+
+Week 2: Core CRUD Operations
+•	Build Property management (Add, View, Edit, Delete) – D2
+•	Build Tenant management (Add, View, Edit, Delete) – D5
+•	Build Lease management (Create, View, Edit, Delete) – D3
+•	Build Maintenance management (Create, View, Edit, Delete) – D1
+•	Implement user login using ASP.NET Core Identity and Authentication middleware & Ensure data relationships are correct (Lease links Property and Tenant) – D4
+
+Week 3: Refinement & Deployment
+•	Responsive design testing and refinement – D2
+•	Bug fixes and user experience improvements – D5
+•	Code cleanup and documentation – D4
+•	Deploy to hosting environment – D1
+•	Final testing and presentation preparation - All
+
+Deliverables:
+•	Working Blazor application with all CRUD operations
+•	Database with proper schema and relationships
+•	User authentication working
+•	Responsive UI design
+•	GitHub repository with clean commit history
+•	Brief documentation of project structure
