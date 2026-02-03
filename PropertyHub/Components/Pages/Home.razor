@@ -1,7 +1,87 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home | PropertyHub</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1 class="mb-2">PropertyHub</h1>
 
-Welcome to your new app.
+<p class="lead">
+    Your centralized rental management dashboard.
+</p>
+
+<AuthorizeView>
+
+    <Authorized>
+
+        <h4 class="mt-4">Quick Actions</h4>
+
+        <div class="row g-3 mt-2">
+
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Listings</h5>
+                        <p class="card-text">
+                            Manage your rental properties and pricing.
+                        </p>
+                        <NavLink class="btn btn-primary w-100" href="listings">
+                            Go to Listings
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Tenants</h5>
+                        <p class="card-text">
+                            Store and manage tenant contact information.
+                        </p>
+                        <NavLink class="btn btn-primary w-100" href="tenants">
+                            Go to Tenants
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Leases</h5>
+                        <p class="card-text">
+                            Track lease agreements and expiration dates.
+                        </p>
+                        <NavLink class="btn btn-primary w-100" href="leases">
+                            Go to Leases
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </Authorized>
+
+    <NotAuthorized>
+
+        <div class="alert alert-info mt-4">
+
+            <h4>Welcome to PropertyHub</h4>
+
+            <p>
+                Create an account or log in to manage your rental properties, tenants, and leases.
+            </p>
+
+            <NavLink class="btn btn-success me-2" href="Account/Register">
+                Register
+            </NavLink>
+
+            <NavLink class="btn btn-outline-primary" href="Account/Login">
+                Login
+            </NavLink>
+
+        </div>
+
+    </NotAuthorized>
+
+</AuthorizeView>

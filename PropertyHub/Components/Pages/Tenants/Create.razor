@@ -1,0 +1,48 @@
+@page "/tenants/create"
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
+
+<h3>Create Tenant</h3>
+
+<EditForm Model="tenant" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Name</label>
+        <InputText class="form-control" @bind-Value="tenant.Name" />
+    </div>
+    <div class="mb-2">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="tenant.Email" />
+    </div>
+    <div class="mb-2">
+        <label>Phone</label>
+        <InputText class="form-control" @bind-Value="tenant.PhoneNumber" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private Tenant tenant = new Tenant();
+
+    private async Task HandleValidSubmit()
+    {
+        tenant.OwnerId = await GetUserIdAsync();
+        _context.Tenants.Add(tenant);
+        await _context.SaveChangesAsync();
+        Navigation.NavigateTo("/tenants");
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}
