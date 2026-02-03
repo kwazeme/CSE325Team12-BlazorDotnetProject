@@ -1,0 +1,41 @@
+@page "/leases/details/{Id:int}"
+@inject ApplicationDbContext _context
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<h3>Lease Details</h3>
+
+<div>
+    <p><strong>Listing:</strong> @lease?.Listing?.Address</p>
+    <p><strong>Tenant:</strong> @lease?.Tenant?.Name</p>
+    <p><strong>Start Date:</strong> @lease?.StartDate.ToShortDateString()</p>
+    <p><strong>End Date:</strong> @lease?.EndDate.ToShortDateString()</p>
+</div>
+
+<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/leases")'>Back</button>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+    private Lease? lease;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        lease = await _context.Leases
+            .Include(l => l.Listing)
+            .Include(l => l.Tenant)
+            .Where(l => l.OwnerId == userId && l.Id == Id)
+            .FirstOrDefaultAsync();
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}
+  

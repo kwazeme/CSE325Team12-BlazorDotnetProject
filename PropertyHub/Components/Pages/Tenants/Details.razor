@@ -1,0 +1,37 @@
+@page "/tenants/details/{Id:int}"
+@inject ApplicationDbContext _context
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<h3>Tenant Details</h3>
+
+<div>
+    <p><strong>Name:</strong> @tenant?.Name</p>
+    <p><strong>Email:</strong> @tenant?.Email</p>
+    <p><strong>Phone:</strong> @tenant?.PhoneNumber</p>
+</div>
+
+<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/tenants")'>Back</button>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+    private Tenant? tenant;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        tenant = await _context.Tenants
+            .Where(t => t.OwnerId == userId && t.Id == Id)
+            .FirstOrDefaultAsync();
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}

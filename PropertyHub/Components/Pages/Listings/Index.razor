@@ -1,0 +1,85 @@
+@page "/listings"
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@using PropertyHub.Shared
+@attribute [Authorize]
+
+<h3>Listings</h3>
+
+<button class="btn btn-primary mb-2" @onclick='() => Navigation.NavigateTo("/listings/create")'>Add Listing</button>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Type</th>
+            <th>Rent</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var listing in listings)
+        {
+            <tr>
+                <td>@listing.Address</td>
+                <td>@listing.City</td>
+                <td>@listing.State</td>
+                <td>@listing.ListingType</td>
+                <td>@listing.RentAmount.ToString("C")</td>
+                <td>
+                    <button class="btn btn-info" @onclick='() => Navigation.NavigateTo($"/listings/details/{listing.Id}")'>View</button>
+                    <button class="btn btn-warning" @onclick='() => Navigation.NavigateTo($"/listings/edit/{listing.Id}")'>Edit</button>
+                    <button class="btn btn-danger" @onclick="() => ShowDeleteModal(listing.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<DeleteDialog @bind-Show="showDialog" OnConfirm="@DeleteListing"
+              Title="Delete Listing" Message="Are you sure you want to delete this listing?" />
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private List<Listing> listings = new();
+    private bool showDialog = false;
+    private int selectedListingId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        listings = await _context.Listings
+            .Where(l => l.OwnerId == userId)
+            .ToListAsync();
+    }
+
+    private void ShowDeleteModal(int id)
+    {
+        selectedListingId = id;
+        showDialog = true;
+    }
+
+    private async Task DeleteListing()
+    {
+        var userId = await GetUserIdAsync();
+        var listing = await _context.Listings
+            .FirstOrDefaultAsync(l => l.Id == selectedListingId && l.OwnerId == userId);
+        if (listing != null)
+        {
+            _context.Listings.Remove(listing);
+            await _context.SaveChangesAsync();
+            listings.RemoveAll(l => l.Id == selectedListingId);
+        }
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}

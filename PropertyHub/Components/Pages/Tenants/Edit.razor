@@ -1,0 +1,61 @@
+@page "/tenants/edit/{Id:int}"
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
+
+<h3>Edit Tenant</h3>
+
+<EditForm Model="tenant" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Name</label>
+        <InputText class="form-control" @bind-Value="tenant.Name" />
+    </div>
+    <div class="mb-2">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="tenant.Email" />
+    </div>
+    <div class="mb-2">
+        <label>Phone</label>
+        <InputText class="form-control" @bind-Value="tenant.PhoneNumber" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+    private Tenant tenant = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        tenant = await _context.Tenants
+            .Where(t => t.OwnerId == userId && t.Id == Id)
+            .FirstOrDefaultAsync() ?? new Tenant();
+
+        if (tenant.Id == 0)
+        {
+            Navigation.NavigateTo("/tenants");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _context.Tenants.Update(tenant);
+        await _context.SaveChangesAsync();
+        Navigation.NavigateTo("/tenants");
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}
