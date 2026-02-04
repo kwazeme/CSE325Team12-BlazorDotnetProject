@@ -1,0 +1,71 @@
+@page "/maintenance/edit/{Id:int}"
+@rendermode InteractiveServer
+@inject MaintenanceService Service
+@inject NavigationManager Nav
+
+<div class="container mt-4">
+    <h3>@(Id == 0 ? "New Maintenance Request" : "Maintenance Details")</h3>
+
+    <EditForm Model="Request" OnValidSubmit="Save" >
+        <DataAnnotationsValidator />
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Select Listing</label>
+                <InputSelect @bind-Value="Request.ListingId" class="form-control">
+                    <option value="">-- Select Property --</option>
+                    <option value="1">Sunset Apartments #101</option>
+                    <option value="2">Oak Ridge Villa</option>
+                    <option value="3">Downtown Loft B</option>
+                </InputSelect>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Scheduled Date</label>
+                <InputDate @bind-Value="Request.ScheduledDate" class="form-control" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Issue Title</label>
+                <InputText @bind-Value="Request.Title" class="form-control" placeholder="e.g. Leaking Faucet" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <InputTextArea @bind-Value="Request.Description" class="form-control" rows="3" />
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-check mt-4">
+                    <InputCheckbox @bind-Value="Request.IsCompleted" class="form-check-input" id="completeCheck" />
+                    <label class="form-check-label" for="completeCheck">Mark as Completed</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <button type="button" class="btn btn-light" @onclick='() => Nav.NavigateTo("/maintenance")'>Cancel</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private MaintenanceRequest Request { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        if (Id != 0)
+        {
+            var existing = Service.GetById(Id);
+            if (existing != null) Request = existing;
+        }
+    }
+
+    void Save()
+    {
+        Service.Save(Request);
+        Nav.NavigateTo("/maintenance");
+    }
+}

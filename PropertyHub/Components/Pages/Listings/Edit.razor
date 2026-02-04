@@ -11,6 +11,10 @@
     <ValidationSummary />
 
     <div class="mb-2">
+    <label>Property Name</label>
+    <InputText class="form-control" @bind-Value="listing.Title" />
+    </div>
+    <div class="mb-2">
         <label>Address</label>
         <InputText class="form-control" @bind-Value="listing.Address" />
     </div>
@@ -29,6 +33,14 @@
     <div class="mb-2">
         <label>Rent Amount</label>
         <InputNumber class="form-control" @bind-Value="listing.RentAmount" />
+    </div>
+    <div class="mb-2">
+        <label>YearBuilt</label>
+        <InputNumber class="form-control" @bind-Value="listing.YearBuilt" />
+    </div>
+    <div class="mb-2">
+        <label>ImageUrl</label>
+        <InputText class="form-control" @bind-Value="listing.ImageUrl" />
     </div>
 
     <button class="btn btn-primary" type="submit">Save</button>

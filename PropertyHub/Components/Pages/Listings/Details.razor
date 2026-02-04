@@ -7,10 +7,13 @@
 <h3>Listing Details</h3>
 
 <div>
+    <p><strong>Property Name:</strong> @listing?.Title</p>
     <p><strong>Address:</strong> @listing?.Address</p>
     <p><strong>City:</strong> @listing?.City</p>
     <p><strong>State:</strong> @listing?.State</p>
     <p><strong>Listing Type:</strong> @listing?.ListingType</p>
+    <p><strong>YearBuilt</strong> @listing?.YearBuilt</p>
+    <p><strong>ImageUrl</strong> @listing?.ImageUrl</p>
     <p><strong>Rent:</strong> @listing?.RentAmount.ToString("C")</p>
 </div>
 

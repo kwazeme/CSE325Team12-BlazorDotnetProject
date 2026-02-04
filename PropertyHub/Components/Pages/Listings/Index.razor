@@ -12,10 +12,12 @@
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>Property Name</th>
             <th>Address</th>
             <th>City</th>
             <th>State</th>
             <th>Type</th>
+            <th>YearBuilt</th>
             <th>Rent</th>
             <th>Actions</th>
         </tr>
@@ -24,10 +26,12 @@
         @foreach (var listing in listings)
         {
             <tr>
+                <td>@listing.Title</td>
                 <td>@listing.Address</td>
                 <td>@listing.City</td>
                 <td>@listing.State</td>
                 <td>@listing.ListingType</td>
+                <td>@listing.YearBuilt</td>
                 <td>@listing.RentAmount.ToString("C")</td>
                 <td>
                     <button class="btn btn-info" @onclick='() => Navigation.NavigateTo($"/listings/details/{listing.Id}")'>View</button>
