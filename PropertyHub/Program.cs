@@ -40,6 +40,43 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 
 var app = builder.Build();
 
+// seed data for Listing so MaintenanceRequests can be captured
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var db = services.GetRequiredService<ApplicationDbContext>();
+
+    // 1. Ensure Database is created/migrated
+    await db.Database.MigrateAsync();
+
+    // 2. Create user if missing
+    var email = "owner@example.com";
+    var user = await userManager.FindByEmailAsync(email);
+    if (user == null)
+    {
+        user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+        var result = await userManager.CreateAsync(user, "P@ssw0rd!"); 
+        if (!result.Succeeded) throw new Exception("Failed to create seed user");
+    }
+
+    // 3. Create listing referencing the identity user's id
+    // We check if it exists using the DB context directly
+    if (!db.Listings.Any(l => l.Id == 101))
+    {
+        db.Listings.Add(new Listing {
+            Id = 101,
+            Title = "Midnight Valencia",
+            Address = "123 Main St",
+            OwnerId = user.Id, 
+            RentAmount = 234.30m,
+            YearBuilt = 2022,
+            ImageUrl = "/images/default-property.jpg"
+        });
+        await db.SaveChangesAsync();
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

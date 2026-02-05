@@ -20,21 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     base.OnModelCreating(modelBuilder);
 
-    modelBuilder.Entity<Listing>().HasData(
-        new Listing
-        {
-            Id = 101,
-            Title = "Midnight Valencia",
-            Address = "123 Main St",
-            City = "Pretoria",
-            State = "Gauteng",
-            ListingType = "2 Bedroom Condo",
-            RentAmount = 234.30m,
-            OwnerId = "sample-user-id",
-            YearBuilt = 2022,
-            ImageUrl = "/images/default-property.jpg"
-        }
-    );
+   
 
     // Note: only seed mapped properties. Do not seed computed or [NotMapped] properties.
     modelBuilder.Entity<MaintenanceRequest>().HasData(
