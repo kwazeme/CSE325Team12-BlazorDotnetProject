@@ -38,6 +38,11 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+// Add MaintenanceService
+// Change service to Scoped for DB compatibility
+builder.Services.AddScoped<MaintenanceService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

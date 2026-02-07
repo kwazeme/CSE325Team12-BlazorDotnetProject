@@ -10,7 +10,7 @@ public class MaintenanceService
 
     public List<MaintenanceRequest> GetAll()
     {
-        // I use .Include to load the related Listing data
+        // We use .Include to load the related Listing data
         return _context.MaintenanceRequests
                        .Include(r => r.Listing) 
                        .ToList();
