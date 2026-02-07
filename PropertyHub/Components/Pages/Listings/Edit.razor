@@ -1,0 +1,81 @@
+@page "/listings/edit/{Id:int}"
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
+
+<h3>Edit Listing</h3>
+
+<EditForm Model="listing" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+    <label>Property Name</label>
+    <InputText class="form-control" @bind-Value="listing.Title" />
+    </div>
+    <div class="mb-2">
+        <label>Address</label>
+        <InputText class="form-control" @bind-Value="listing.Address" />
+    </div>
+    <div class="mb-2">
+        <label>City</label>
+        <InputText class="form-control" @bind-Value="listing.City" />
+    </div>
+    <div class="mb-2">
+        <label>State</label>
+        <InputText class="form-control" @bind-Value="listing.State" />
+    </div>
+    <div class="mb-2">
+        <label>Listing Type</label>
+        <InputText class="form-control" @bind-Value="listing.ListingType" />
+    </div>
+    <div class="mb-2">
+        <label>Rent Amount</label>
+        <InputNumber class="form-control" @bind-Value="listing.RentAmount" />
+    </div>
+    <div class="mb-2">
+        <label>YearBuilt</label>
+        <InputNumber class="form-control" @bind-Value="listing.YearBuilt" />
+    </div>
+    <div class="mb-2">
+        <label>ImageUrl</label>
+        <InputText class="form-control" @bind-Value="listing.ImageUrl" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+    private Listing listing = new Listing();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        listing = await _context.Listings
+            .Where(l => l.OwnerId == userId && l.Id == Id)
+            .FirstOrDefaultAsync() ?? new Listing();
+
+        if (listing.Id == 0)
+        {
+            Navigation.NavigateTo("/listings");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _context.Listings.Update(listing);
+        await _context.SaveChangesAsync();
+        Navigation.NavigateTo("/listings");
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}

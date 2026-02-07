@@ -1,0 +1,80 @@
+@page "/tenants"
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
+
+<h3>Tenants</h3>
+
+<button class="btn btn-primary mb-2" @onclick='() => Navigation.NavigateTo("/tenants/create")'>Add Tenant</button>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var tenant in tenants)
+        {
+            <tr>
+                <td>@tenant.Name</td>
+                <td>@tenant.Email</td>
+                <td>@tenant.PhoneNumber</td>
+                <td>
+                    <button class="btn btn-info" @onclick='() => Navigation.NavigateTo($"/tenants/details/{tenant.Id}")'>View</button>
+                    <button class="btn btn-warning" @onclick='() => Navigation.NavigateTo($"/tenants/edit/{tenant.Id}")'>Edit</button>
+                    <button class="btn btn-danger" @onclick="() => ShowDeleteModal(tenant.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<DeleteDialog @bind-Show="showDialog" OnConfirm="@DeleteTenant"
+              Title="Delete Tenant" Message="Are you sure you want to delete this tenant?" />
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private List<Tenant> tenants = new();
+    private bool showDialog = false;
+    private int selectedTenantId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        tenants = await _context.Tenants
+            .Where(t => t.OwnerId == userId)
+            .ToListAsync();
+    }
+
+    private void ShowDeleteModal(int id)
+    {
+        selectedTenantId = id;
+        showDialog = true;
+    }
+
+    private async Task DeleteTenant()
+    {
+        var userId = await GetUserIdAsync();
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(t => t.Id == selectedTenantId && t.OwnerId == userId);
+        if (tenant != null)
+        {
+            _context.Tenants.Remove(tenant);
+            await _context.SaveChangesAsync();
+            tenants.RemoveAll(t => t.Id == selectedTenantId);
+        }
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}

@@ -1,0 +1,42 @@
+@page "/listings/details/{Id:int}"
+@inject ApplicationDbContext _context
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<h3>Listing Details</h3>
+
+<div>
+    <p><strong>Property Name:</strong> @listing?.Title</p>
+    <p><strong>Address:</strong> @listing?.Address</p>
+    <p><strong>City:</strong> @listing?.City</p>
+    <p><strong>State:</strong> @listing?.State</p>
+    <p><strong>Listing Type:</strong> @listing?.ListingType</p>
+    <p><strong>YearBuilt</strong> @listing?.YearBuilt</p>
+    <p><strong>ImageUrl</strong> @listing?.ImageUrl</p>
+    <p><strong>Rent:</strong> @listing?.RentAmount.ToString("C")</p>
+</div>
+
+<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/listings")'>Back</button>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+    private Listing? listing;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        listing = await _context.Listings
+            .Where(l => l.OwnerId == userId && l.Id == Id)
+            .FirstOrDefaultAsync();
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}

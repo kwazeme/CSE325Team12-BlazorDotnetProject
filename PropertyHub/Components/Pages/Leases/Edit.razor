@@ -1,0 +1,85 @@
+@page "/leases/edit/{Id:int}"
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
+
+<h3>Edit Lease</h3>
+
+<EditForm Model="lease" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Listing</label>
+        <InputSelect class="form-control" @bind-Value="lease.ListingId">
+            <option value="">-- Select Listing --</option>
+            @foreach (var l in listings)
+            {
+                <option value="@l.Id">@l.Address</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-2">
+        <label>Tenant</label>
+        <InputSelect class="form-control" @bind-Value="lease.TenantId">
+            <option value="">-- Select Tenant --</option>
+            @foreach (var t in tenants)
+            {
+                <option value="@t.Id">@t.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-2">
+        <label>Start Date</label>
+        <InputDate class="form-control" @bind-Value="lease.StartDate" />
+    </div>
+
+    <div class="mb-2">
+        <label>End Date</label>
+        <InputDate class="form-control" @bind-Value="lease.EndDate" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+    private Lease lease = new Lease();
+    private List<Listing> listings = new();
+    private List<Tenant> tenants = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await GetUserIdAsync();
+        lease = await _context.Leases
+            .Where(l => l.OwnerId == userId && l.Id == Id)
+            .FirstOrDefaultAsync() ?? new Lease();
+
+        listings = await _context.Listings.Where(l => l.OwnerId == userId).ToListAsync();
+        tenants = await _context.Tenants.Where(t => t.OwnerId == userId).ToListAsync();
+
+        if (lease.Id == 0)
+        {
+            Navigation.NavigateTo("/leases");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _context.Leases.Update(lease);
+        await _context.SaveChangesAsync();
+        Navigation.NavigateTo("/leases");
+    }
+
+    private async Task<string?> GetUserIdAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        return UserManager.GetUserId(authState.User);
+    }
+}

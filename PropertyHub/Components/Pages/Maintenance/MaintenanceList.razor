@@ -1,0 +1,47 @@
+@page "/maintenance"
+
+@rendermode InteractiveServer
+@inject MaintenanceService Service
+@inject NavigationManager Nav
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Property Maintenance Hub</h3>
+    <button class="btn btn-primary" @onclick="CreateNew">Add New Maintenance</button>
+</div>
+
+<div class="row">
+   @foreach (var item in Service.GetAll().OrderBy(x => x.IsCompleted))
+{
+    // Capture the ID in a local variable to avoid closure issues in loops
+    var currentId = item.Id;
+    var editUrl = $"/maintenance/edit/{currentId}";
+
+    <div class="col-md-6 mb-3">
+        <div class="card @(item.IsCompleted ? "border-success" : "border-warning")">
+            <div class="card-body">
+                <h5 class="card-title">@item.Title</h5>
+                
+                <h6 class="card-subtitle mb-2 text-muted">
+                    @((item.Listing?.Title) ?? "Unknown Property")
+                </h6>
+                
+                <p>Date: @item.ScheduledDate.ToShortDateString()</p>
+                
+                <span class="badge @(item.IsCompleted ? "bg-success" : "bg-warning text-dark")">
+                    @(item.IsCompleted ? "Completed" : "Pending")
+                </span>
+                
+                @* Fixed the onclick syntax for cleaner navigation *@
+                <button class="btn btn-outline-secondary btn-sm float-end" 
+                        @onclick="() => Nav.NavigateTo(editUrl)">
+                    View Details / Edit
+                </button>
+            </div>
+        </div>
+    </div>
+}
+</div>
+
+@code {
+    void CreateNew() => Nav.NavigateTo("/maintenance/edit/0");
+}
