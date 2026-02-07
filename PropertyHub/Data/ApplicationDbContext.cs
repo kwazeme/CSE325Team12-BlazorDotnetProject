@@ -13,10 +13,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<Lease> Leases { get; set; }
 
-    // Add DbSet for MaintenanceRequest
-    public DbSet<MaintenanceRequest> MaintenanceRequests { get; set;}
-
-
-    }
+    // Add MaintenanceRequest 
+     public DbSet<MaintenanceRequest> MaintenanceRequests { get; set; }
 }
-
