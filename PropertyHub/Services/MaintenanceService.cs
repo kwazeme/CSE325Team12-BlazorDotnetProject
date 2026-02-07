@@ -18,7 +18,7 @@ public class MaintenanceService
 
     public List<Listing> GetListings() => _context.Listings.ToList();
     
-    public MaintenanceRequest GetById(int id) => _context.MaintenanceRequests.Find(id);
+    public MaintenanceRequest? GetById(int id) => _context.MaintenanceRequests.Find(id);
 
     public void Save(MaintenanceRequest request)
     {
