@@ -16,25 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     // Add DbSet for MaintenanceRequest
     public DbSet<MaintenanceRequest> MaintenanceRequests { get; set;}
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    base.OnModelCreating(modelBuilder);
 
-   
-
-    // Note: only seed mapped properties. Do not seed computed or [NotMapped] properties.
-    modelBuilder.Entity<MaintenanceRequest>().HasData(
-        new MaintenanceRequest
-        {
-            Id = 1,
-            ListingId = 101,
-            Title = "Leaking Faucet",
-            // Use a fixed DateTime for HasData (migrations require constant values)
-            ScheduledDate = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc),
-            // If CompletedDate is the persisted field, seed that (null = not completed)
-            IsCompleted = false
-        }
-    );
     }
 }
 
