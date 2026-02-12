@@ -14,9 +14,10 @@
     <nav class="nav flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                 <span><i class="bi bi-house-door"></i></span>Home
             </NavLink>
         </div>
+
         <AuthorizeView>
             <Authorized>
 
@@ -34,18 +35,18 @@
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="leases">
-                        <span class="bi bi-file-text-nav-menu" aria-hidden="true"></span> Leases
+                        <span class="bi bi-file-earmark-text" aria-hidden="true"></span> Leases
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="maintenance">
-                        <span class="bi bi-file-text-nav-menu" aria-hidden="true"></span> Maintenance Requests
+                        <span class="bi bi-wrench" aria-hidden="true"></span> Maintenance Requests
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                         <span><i class="bi bi-person-circle"></i></span>@context.User.Identity?.Name
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
@@ -53,7 +54,7 @@
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            <span><i class="bi bi-box-arrow-left"></i></span>Logout
                         </button>
                     </form>
                 </div>

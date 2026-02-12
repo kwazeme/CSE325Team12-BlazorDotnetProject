@@ -1,7 +1,8 @@
 @page "/maintenance/edit/{Id:int}"
 @rendermode InteractiveServer
 @inject MaintenanceService Service
-@inject NavigationManager Nav
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
 
 <div class="container mt-4">
     <h3>@(Id == 0 ? "New Maintenance Request" : "Maintenance Details")</h3>
@@ -11,12 +12,12 @@
 
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label">Select Listing</label>
+                <label class="form-label">@(Id == 0 ? "Select Property to enter New Maintenance Record" :  "Selected Property Editing")</label>
                 <InputSelect @bind-Value="Request.ListingId" class="form-control">
-                    <option value="">-- Select Property --</option>
-                    <option value="1">Sunset Apartments #101</option>
-                    <option value="2">Oak Ridge Villa</option>
-                    <option value="3">Downtown Loft B</option>
+                    @foreach (var listing in _context.Listings)
+                    {
+                        <option value="@listing.Id">@listing.Title, @listing.Address</option>
+                    }
                 </InputSelect>
             </div>
 
@@ -45,7 +46,7 @@
 
         <div class="mt-4">
             <button type="submit" class="btn btn-success">Save Changes</button>
-            <button type="button" class="btn btn-light" @onclick='() => Nav.NavigateTo("/maintenance")'>Cancel</button>
+            <button type="button" class="btn btn-light" @onclick='() => Navigation.NavigateTo("/maintenance")'>Cancel</button>
         </div>
     </EditForm>
 </div>
@@ -66,6 +67,6 @@
     void Save()
     {
         Service.Save(Request);
-        Nav.NavigateTo("/maintenance");
+        Navigation.NavigateTo("/maintenance");
     }
 }

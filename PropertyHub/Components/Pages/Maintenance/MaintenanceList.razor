@@ -2,7 +2,7 @@
 
 @rendermode InteractiveServer
 @inject MaintenanceService Service
-@inject NavigationManager Nav
+@inject NavigationManager Navigation
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3>Property Maintenance Hub</h3>
@@ -33,7 +33,7 @@
                 
                 @* Fixed the onclick syntax for cleaner navigation *@
                 <button class="btn btn-outline-secondary btn-sm float-end" 
-                        @onclick="() => Nav.NavigateTo(editUrl)">
+                        @onclick="() => Navigation.NavigateTo(editUrl)">
                     View Details / Edit
                 </button>
             </div>
@@ -43,5 +43,5 @@
 </div>
 
 @code {
-    void CreateNew() => Nav.NavigateTo("/maintenance/edit/0");
+    void CreateNew() => Navigation.NavigateTo("/maintenance/edit/0");
 }

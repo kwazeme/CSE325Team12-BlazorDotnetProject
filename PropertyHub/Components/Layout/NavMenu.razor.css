@@ -45,7 +45,6 @@
 .bi-building-nav-menu {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-building' viewBox='0 0 16 16'%3E%3Cpath d='M4 0a2 2 0 0 0-2 2v14h12V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v13H3V2a1 1 0 0 1 1-1zm1 3h2v2H5V4zm0 3h2v2H5V7zm0 3h2v2H5v-2zm4-6h2v2H9V4zm0 3h2v2H9V7zm0 3h2v2H9v-2z'/%3E%3C/svg%3E");
 }
-
 .bi-file-text-nav-menu {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-file-text' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 7a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z'/%3E%3Cpath d='M4 0h5.5L14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm5.5 1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5h-3.5a.5.5 0 0 1-.5-.5V1z'/%3E%3C/svg%3E");
 }
@@ -130,4 +129,8 @@
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
+
+    i.bi { color: white; /* icon color */ 
+        font-size: 1.7rem; /* adjust size as needed */ 
+        margin-right: 1rem; }
 }
