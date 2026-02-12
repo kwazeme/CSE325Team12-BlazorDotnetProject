@@ -3,7 +3,7 @@
 ### Attendance:
 
 * Kwazeme Ogubie - develop-01
-*
+* Julius Songopa - develop-04
 
 ### Brief Summary:
 
