@@ -1,12 +1,14 @@
 @page "/leases/create"
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
+
+@rendermode InteractiveServer
 @inject UserManager<ApplicationUser> UserManager
 @attribute [Authorize]
 
 <h3>Create Lease</h3>
 
-<EditForm Model="lease" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="lease" OnValidSubmit="HandleValidSubmit" FormName="create-lease-form">
     <DataAnnotationsValidator />
     <ValidationSummary />
 

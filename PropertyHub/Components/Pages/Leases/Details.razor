@@ -1,6 +1,7 @@
 @page "/leases/details/{Id:int}"
 @inject ApplicationDbContext _context
 @inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
 @attribute [Authorize]
 
