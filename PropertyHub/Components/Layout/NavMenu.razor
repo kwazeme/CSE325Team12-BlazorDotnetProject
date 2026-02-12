@@ -18,31 +18,32 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="listings">
-                <span><i class="bi bi-building"></i></span>  Listings
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="tenants">
-                 <span><i class="bi bi-people"></i></span> Tenants
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="leases">
-                 <span><i class="bi bi-file-earmark-text"></i></span> Leases
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="maintenance">
-                <span><i class="bi bi-wrench"></i></span>Maintenance
-            </NavLink>
-        </div>
-
         <AuthorizeView>
             <Authorized>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="listings">
+                        <span class="bi bi-building-nav-menu" aria-hidden="true"></span> Listings
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="tenants">
+                        <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> Tenants
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="leases">
+                        <span class="bi bi-file-earmark-text" aria-hidden="true"></span> Leases
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="maintenance">
+                        <span class="bi bi-wrench" aria-hidden="true"></span> Maintenance Requests
+                    </NavLink>
+                </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                          <span><i class="bi bi-person-circle"></i></span>@context.User.Identity?.Name
@@ -59,14 +60,14 @@
                 </div>
             </Authorized>
             <NotAuthorized>
-                <div class="nav-item px-3">
+                @* <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
-                </div>
+                </div> *@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Sign In
                     </NavLink>
                 </div>
             </NotAuthorized>
