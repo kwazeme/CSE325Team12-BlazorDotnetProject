@@ -1,6 +1,8 @@
 @page "/tenants"
 @inject ApplicationDbContext _context
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
+
 @inject UserManager<ApplicationUser> UserManager
 @attribute [Authorize]
 
