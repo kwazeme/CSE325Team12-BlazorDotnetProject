@@ -1,19 +1,74 @@
 @page "/tenants/details/{Id:int}"
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+@using Microsoft.AspNetCore.Authorization
+
 @inject ApplicationDbContext _context
-@inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+
+@rendermode InteractiveServer
 @attribute [Authorize]
 
-<h3>Tenant Details</h3>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0 text-primary">Tenant Profile</h3>
+                <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo("/tenants")'>
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </button>
+            </div>
 
-<div>
-    <p><strong>Name:</strong> @tenant?.Name</p>
-    <p><strong>Email:</strong> @tenant?.Email</p>
-    <p><strong>Phone:</strong> @tenant?.PhoneNumber</p>
+            @if (tenant == null)
+            {
+                <div class="text-center mt-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Loading tenant details...</p>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm">
+                    @* Header with Initial Circle *@
+                    <div class="card-header bg-white py-4 text-center">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+                            @tenant.Name[0].ToString().ToUpper()
+                        </div>
+                        <h4 class="card-title mb-0">@tenant.Name</h4>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">Active Tenant</span>
+                    </div>
+
+                    @* Details List *@
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item py-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-envelope text-muted fs-4 me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Email Address</small>
+                                        <a href="mailto:@tenant.Email" class="text-decoration-none">@tenant.Email</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item py-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-telephone text-muted fs-4 me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Phone Number</small>
+                                        <a href="tel:@tenant.PhoneNumber" class="text-decoration-none">@tenant.PhoneNumber</a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>
-
-<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/tenants")'>Back</button>
-
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;

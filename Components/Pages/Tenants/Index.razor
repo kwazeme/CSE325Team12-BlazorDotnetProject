@@ -1,4 +1,8 @@
 @page "/tenants"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
 @inject ApplicationDbContext _context
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
@@ -40,6 +44,7 @@
               Title="Delete Tenant" Message="Are you sure you want to delete this tenant?" />
 
 @code {
+
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 

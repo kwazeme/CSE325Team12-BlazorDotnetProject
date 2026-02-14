@@ -4,52 +4,141 @@
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
 
-<div class="container mt-4">
-    <h3>@(Id == 0 ? "New Maintenance Request" : "Maintenance Details")</h3>
+<div class="container mt-4 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            
+            @* --- Breadcrumb/Back Navigation --- *@
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/maintenance" class="text-decoration-none">Maintenance</a></li>
+                    <li class="breadcrumb-item active">@(Id == 0 ? "New Request" : "Edit Request")</li>
+                </ol>
+            </nav>
 
-    <EditForm Model="Request" OnValidSubmit="Save" >
-        <DataAnnotationsValidator />
+            <div class="card shadow-sm border-0 overflow-hidden">
+                @* --- Card Header with Dynamic Color --- *@
+                <div class="card-header @(Request.IsCompleted ? "bg-success" : "bg-primary") text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-wrench-adjustable me-2"></i>
+                            @(Id == 0 ? "Create Maintenance Task" : "Update Maintenance Task")
+                        </h5>
+                        @if(Id != 0)
+                        {
+                            <span class="badge bg-white text-dark">Ticket #@Id</span>
+                        }
+                    </div>
+                </div>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">@(Id == 0 ? "Select Property to enter New Maintenance Record" :  "Selected Property Editing")</label>
-                <InputSelect @bind-Value="Request.ListingId" class="form-control">
-                    @foreach (var listing in _context.Listings)
-                    {
-                        <option value="@listing.Id">@listing.Title, @listing.Address</option>
-                    }
-                </InputSelect>
-            </div>
+                <div class="card-body p-4 p-md-5">
+                    <EditForm Model="Request" OnValidSubmit="Save" FormName="MaintenanceForm">
+                        <DataAnnotationsValidator />
+                        
+                        @* Custom Error Alert Section *@
+                        <ValidationSummary class="alert alert-danger d-flex align-items-center py-2" role="alert" />
 
-            <div class="col-md-6">
-                <label class="form-label">Scheduled Date</label>
-                <InputDate @bind-Value="Request.ScheduledDate" class="form-control" />
-            </div>
+                        <div class="row g-4">
+                            @* --- Section 1: Property & Timing --- *@
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2">Location & Schedule</h6>
+                            </div>
 
-            <div class="col-12">
-                <label class="form-label">Issue Title</label>
-                <InputText @bind-Value="Request.Title" class="form-control" placeholder="e.g. Leaking Faucet" />
-            </div>
+                            <div class="col-md-7">
+                                <label class="form-label fw-semibold">Property Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
+                                    <InputSelect @bind-Value="Request.ListingId" class="form-select border-start-0">
+                                        <option value="0">-- Select Listing --</option>
+                                        @foreach (var listing in _context.Listings)
+                                        {
+                                            <option value="@listing.Id">@listing.Title (@listing.Address)</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
 
-            <div class="col-12">
-                <label class="form-label">Description</label>
-                <InputTextArea @bind-Value="Request.Description" class="form-control" rows="3" />
-            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-semibold">Scheduled For</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-clock"></i></span>
+                                    <InputDate @bind-Value="Request.ScheduledDate" class="form-control border-start-0" />
+                                </div>
+                            </div>
 
-            <div class="col-md-6">
-                <div class="form-check mt-4">
-                    <InputCheckbox @bind-Value="Request.IsCompleted" class="form-check-input" id="completeCheck" />
-                    <label class="form-check-label" for="completeCheck">Mark as Completed</label>
+                            @* --- Section 2: Issue Details --- *@
+                            <div class="col-12 mt-5">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2">Issue Details</h6>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Issue Title</label>
+                                <InputText @bind-Value="Request.Title" class="form-control form-control-lg bg-light-subtle" 
+                                           placeholder="Short summary of the problem..." />
+                                <div class="form-text">Keep it brief (e.g., 'Broken dishwasher', 'Lawn maintenance')</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Detailed Instructions / Description</label>
+                                <InputTextArea @bind-Value="Request.Description" class="form-control" rows="5" 
+                                               placeholder="Describe the issue in detail. If applicable, mention if the tenant needs to be home or if you have a key." />
+                            </div>
+
+                            @* --- Section 3: Status --- *@
+                            <div class="col-12 mt-4">
+                                <div class="card border @(Request.IsCompleted ? "border-success bg-success-subtle" : "border-warning bg-warning-subtle")">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch d-flex align-items-center">
+                                            <InputCheckbox @bind-Value="Request.IsCompleted" class="form-check-input mt-0" id="completeCheck" style="width: 3em; height: 1.5em;" />
+                                            <div class="ms-3">
+                                                <label class="form-check-label fw-bold d-block" for="completeCheck">
+                                                    @(Request.IsCompleted ? "Job Completed" : "Job In-Progress")
+                                                </label>
+                                                <small class="text-muted">Toggle this once the maintenance task has been verified as finished.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* --- Sticky-style Footer for Buttons --- *@
+                        <div class="border-top mt-5 pt-4 d-flex justify-content-between align-items-center">
+                            <button type="button" class="btn btn-link text-muted text-decoration-none" @onclick='() => Navigation.NavigateTo("/maintenance")'>
+                                <i class="bi bi-x-circle me-1"></i> Discard Changes
+                            </button>
+                            
+                            <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow">
+                                @if (Id == 0)
+                                {
+                                    <span><i class="bi bi-plus-circle me-2"></i>Create Request</span>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-cloud-upload me-2"></i>Update Record</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
                 </div>
             </div>
         </div>
-
-        <div class="mt-4">
-            <button type="submit" class="btn btn-success">Save Changes</button>
-            <button type="button" class="btn btn-light" @onclick='() => Navigation.NavigateTo("/maintenance")'>Cancel</button>
-        </div>
-    </EditForm>
+    </div>
 </div>
+
+<style>
+    /* Subtle touch-ups */
+    .form-select:focus, .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+    .input-group-text {
+        color: #6c757d;
+    }
+    .bg-light-subtle {
+        background-color: #f8f9fa !important;
+    }
+</style>
 
 @code {
     [Parameter] public int Id { get; set; }

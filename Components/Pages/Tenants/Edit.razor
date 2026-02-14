@@ -1,56 +1,156 @@
 @page "/tenants/edit/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
 @attribute [Authorize]
 
-<h3>Edit Tenant</h3>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <div class="card shadow-sm border-0">
+                @* Card Header *@
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Tenant Information
+                    </h5>
+                </div>
 
-<EditForm Model="tenant" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+                @* Form Content *@
+                <div class="card-body p-4">
+                    <EditForm EditContext="editContext" OnSubmit="HandleSubmit" FormName="EditTenantForm">
+                        <DataAnnotationsValidator />
 
-    <div class="mb-2">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="tenant.Name" />
-    </div>
-    <div class="mb-2">
-        <label>Email</label>
-        <InputText class="form-control" @bind-Value="tenant.Email" />
-    </div>
-    <div class="mb-2">
-        <label>Phone</label>
-        <InputText class="form-control" @bind-Value="tenant.PhoneNumber" />
-    </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <InputText class="form-control" @bind-Value="tenant.Name" />
+                            </div>
+                            <ValidationMessage For="@(() => tenant.Name)" />
+                        </div>
 
-    <button class="btn btn-primary" type="submit">Save</button>
-</EditForm>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <InputText class="form-control" @bind-Value="tenant.Email" />
+                            </div>
+                            <ValidationMessage For="@(() => tenant.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input class="form-control" value="@tenant.PhoneNumber" @oninput="FormatPhone" />
+                            </div>
+                            <ValidationMessage For="@(() => tenant.PhoneNumber)" />
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary px-4" 
+                                    @onclick='() => Navigation.NavigateTo($"/tenants/details/{Id}")'>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+            
+            @* Optional: Meta info below card *@
+            <p class="text-center text-muted small mt-3">
+                ID: @Id | Owner Access Verified
+            </p>
+        </div>
+    </div>
+</div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [Parameter] public int Id { get; set; }
-    private Tenant tenant = new();
+    
+    [SupplyParameterFromForm]
+    private Tenant tenant { get; set; } = new();
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
 
     protected override async Task OnInitializedAsync()
     {
         var userId = await GetUserIdAsync();
-        tenant = await _context.Tenants
-            .Where(t => t.OwnerId == userId && t.Id == Id)
-            .FirstOrDefaultAsync() ?? new Tenant();
+        
+        // Fetch original tenant data
+        var existingTenant = await _context.Tenants
+            .FirstOrDefaultAsync(t => t.OwnerId == userId && t.Id == Id);
 
-        if (tenant.Id == 0)
+        if (existingTenant == null)
         {
             Navigation.NavigateTo("/tenants");
+            return;
+        }
+
+        tenant = existingTenant;
+        
+        // Setup validation
+        editContext = new EditContext(tenant);
+        messageStore = new ValidationMessageStore(editContext);
+        editContext.OnFieldChanged += (s, e) => messageStore?.Clear(e.FieldIdentifier);
+    }
+
+    private async Task HandleSubmit()
+    {
+        messageStore?.Clear();
+
+        if (editContext!.Validate())
+        {
+            var userId = await GetUserIdAsync();
+
+            // Duplicate Email Check (Exclude the current tenant ID)
+            var emailExists = await _context.Tenants
+                .AnyAsync(t => t.Email.ToLower() == tenant.Email.ToLower() 
+                            && t.OwnerId == userId 
+                            && t.Id != Id);
+
+            if (emailExists)
+            {
+                messageStore?.Add(editContext!.Field(nameof(tenant.Email)), 
+                    "Another tenant already uses this email address.");
+                editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            _context.Tenants.Update(tenant);
+            await _context.SaveChangesAsync();
+            Navigation.NavigateTo($"/tenants/details/{Id}");
         }
     }
 
-    private async Task HandleValidSubmit()
+    private void FormatPhone(ChangeEventArgs e)
     {
-        _context.Tenants.Update(tenant);
-        await _context.SaveChangesAsync();
-        Navigation.NavigateTo("/tenants");
+        string input = e.Value?.ToString() ?? "";
+        string digitsOnly = new string(input.Where(char.IsDigit).ToArray());
+        if (digitsOnly.Length > 10) digitsOnly = digitsOnly.Substring(0, 10);
+
+        string formatted = digitsOnly;
+        if (digitsOnly.Length > 0)
+        {
+            if (digitsOnly.Length <= 3) formatted = $"({digitsOnly}";
+            else if (digitsOnly.Length <= 6) formatted = $"({digitsOnly.Substring(0, 3)}) {digitsOnly.Substring(3)}";
+            else formatted = $"({digitsOnly.Substring(0, 3)}) {digitsOnly.Substring(3, 3)}-{digitsOnly.Substring(6)}";
+        }
+        tenant.PhoneNumber = formatted;
     }
 
     private async Task<string?> GetUserIdAsync()

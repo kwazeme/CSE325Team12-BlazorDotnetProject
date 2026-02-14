@@ -1,37 +1,49 @@
-@* Shared/DeleteDialog.razor *@
-<div class="modal fade @(Show ? "show d-block" : "")" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@Title</h5>
-                <button type="button" class="btn-close" @onclick="CloseAsync"></button>
-            </div>
-            <div class="modal-body">
-                <p>@Message</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="CloseAsync">Cancel</button>
-                <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+@if (Show)
+{
+      <div class="modal-backdrop fade show"></div>
+
+    <div class="modal d-block" tabindex="-1" style="z-index: 1055 background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@Title
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CancelAsync"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="mb-0">@Message</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" @onclick="CancelAsync">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger px-4" @onclick="ConfirmDeleteAsync">
+                        Delete
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 @code {
     [Parameter] public bool Show { get; set; }
     [Parameter] public EventCallback<bool> ShowChanged { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public string Title { get; set; } = "Confirm Delete";
-    [Parameter] public string Message { get; set; } = "Are you sure you want to delete this item?";
+    [Parameter] public string Message { get; set; } = "Are you sure you want to delete this item? This action cannot be undone.";
 
-    private async Task CloseAsync()
+    private async Task CancelAsync()
     {
-        await ShowChanged.InvokeAsync(false);
+        Show = false; // Update local state
+        await ShowChanged.InvokeAsync(false); // Notify parent
     }
 
-    private async Task ConfirmDelete()
+    private async Task ConfirmDeleteAsync()
     {
-        await OnConfirm.InvokeAsync();
-        await ShowChanged.InvokeAsync(false);
+        await OnConfirm.InvokeAsync(); // Run delete logic
+        Show = false; // Close modal
+        await ShowChanged.InvokeAsync(false); // Notify parent
     }
 }

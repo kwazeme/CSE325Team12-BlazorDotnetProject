@@ -1,4 +1,9 @@
 @page "/tenants/create"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
 @inject ApplicationDbContext _context
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
@@ -7,7 +12,7 @@
 
 <h3>Create Tenant</h3>
 
-<EditForm Model="tenant" OnValidSubmit="HandleValidSubmit">
+<EditForm EditContext="editContext" OnSubmit="HandleValidSubmit" FormName="CreateTenantForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -15,30 +20,78 @@
         <label>Name</label>
         <InputText class="form-control" @bind-Value="tenant.Name" />
     </div>
-    <div class="mb-2">
-        <label>Email</label>
+    <div class="mb-3">
+        <label class="form-label">Email Address</label>
         <InputText class="form-control" @bind-Value="tenant.Email" />
+
     </div>
     <div class="mb-2">
         <label>Phone</label>
         <InputText class="form-control" @bind-Value="tenant.PhoneNumber" />
     </div>
 
-    <button class="btn btn-primary" type="submit">Save</button>
+    <button class="btn btn-primary" type="submit">
+        <i class="bi bi-person-plus me-1"></i>Save Tenant
+    </button>
 </EditForm>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    private Tenant tenant = new Tenant();
+    [SupplyParameterFromForm]
+    private Tenant tenant { get; set; } = new();
 
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize the EditContext with our model
+        editContext = new EditContext(tenant);
+        messageStore = new ValidationMessageStore(editContext);
+
+        // Pre-fill the OwnerId so validation doesn't fail
+        var userId = await GetUserIdAsync();
+        if (userId != null)
+        {
+            tenant.OwnerId = userId;
+        }
+
+        // Clear errors when the user fixes a field
+        editContext.OnFieldChanged += (s, e) => messageStore?.Clear(e.FieldIdentifier);
+    }
+    // Handle form submission
     private async Task HandleValidSubmit()
     {
-        tenant.OwnerId = await GetUserIdAsync();
-        _context.Tenants.Add(tenant);
-        await _context.SaveChangesAsync();
-        Navigation.NavigateTo("/tenants");
+        messageStore?.Clear();
+
+        // Ensure we have an OwnerId (just in case)
+        if (string.IsNullOrEmpty(tenant.OwnerId))
+        {
+            tenant.OwnerId = await GetUserIdAsync();
+        }
+
+        if (!string.IsNullOrEmpty(tenant.OwnerId) && !string.IsNullOrEmpty(tenant.Email))
+        {
+            // Check for duplicate email under this specific owner
+            var emailExists = await _context.Tenants
+                .AnyAsync(t => t.Email.ToLower() == tenant.Email.ToLower() 
+                            && t.OwnerId == tenant.OwnerId);
+
+            if (emailExists)
+            {
+                messageStore?.Add(editContext!.Field(nameof(tenant.Email)), 
+                    "You already have a tenant registered with this email address.");
+                editContext?.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Save the data
+            _context.Tenants.Add(tenant);
+            await _context.SaveChangesAsync();
+            Navigation.NavigateTo("/tenants");
+        }
     }
 
     private async Task<string?> GetUserIdAsync()
