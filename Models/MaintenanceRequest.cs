@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using PropertyHub.Data;
 public class MaintenanceRequest
 {
@@ -14,4 +15,8 @@ public class MaintenanceRequest
     public string Description { get; set; } = string.Empty;
     public DateTime ScheduledDate { get; set; } = DateTime.Now;
     public bool IsCompleted { get; set; }
+
+    [Required]
+    public string OwnerId { get; set; } = string.Empty;
+
 }

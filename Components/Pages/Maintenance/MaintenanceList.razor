@@ -1,47 +1,114 @@
 @page "/maintenance"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
 
 @rendermode InteractiveServer
-@inject MaintenanceService Service
+@inject ApplicationDbContext _context
 @inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3>Property Maintenance Hub</h3>
-    <button class="btn btn-primary" @onclick="CreateNew">Add New Maintenance</button>
-</div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">Property Maintenance Hub</h3>
+            <p class="text-muted small">Track and manage repair requests for your properties.</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" @onclick="CreateNew">
+            <i class="bi bi-plus-lg me-1"></i> Add New Maintenance
+        </button>
+    </div>
 
-<div class="row">
-   @foreach (var item in Service.GetAll().OrderBy(x => x.IsCompleted))
-{
-    // Capture the ID in a local variable to avoid closure issues in loops
-    var currentId = item.Id;
-    var editUrl = $"/maintenance/edit/{currentId}";
-
-    <div class="col-md-6 mb-3">
-        <div class="card @(item.IsCompleted ? "border-success" : "border-warning")">
+    @if (maintenanceRequests == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Loading your requests...</p>
+        </div>
+    }
+    else if (!maintenanceRequests.Any())
+    {
+        <div class="card border-dashed text-center p-5 bg-light">
             <div class="card-body">
-                <h5 class="card-title">@item.Title</h5>
-                
-                <h6 class="card-subtitle mb-2 text-muted">
-                    @((item.Listing?.Title) ?? "Unknown Property")
-                </h6>
-                
-                <p>Date: @item.ScheduledDate.ToShortDateString()</p>
-                
-                <span class="badge @(item.IsCompleted ? "bg-success" : "bg-warning text-dark")">
-                    @(item.IsCompleted ? "Completed" : "Pending")
-                </span>
-                
-                @* Fixed the onclick syntax for cleaner navigation *@
-                <button class="btn btn-outline-secondary btn-sm float-end" 
-                        @onclick="() => Navigation.NavigateTo(editUrl)">
-                    View Details / Edit
-                </button>
+                <i class="bi bi-tools text-muted fs-1"></i>
+                <h5 class="mt-3">No Maintenance Tasks Found</h5>
+                <p class="text-muted">You haven't logged any maintenance requests yet.</p>
+                <button class="btn btn-outline-primary" @onclick="CreateNew">Create Your First Task</button>
             </div>
         </div>
-    </div>
-}
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in maintenanceRequests)
+            {
+                // Capture the ID locally for the lambda
+                var currentId = item.Id;
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm @(item.IsCompleted ? "border-success-subtle" : "border-warning-subtle")">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0">@item.Title</h5>
+                                <span class="badge @(item.IsCompleted ? "bg-success" : "bg-warning text-dark")">
+                                    <i class="bi @(item.IsCompleted ? "bi-check-circle" : "bi-clock") me-1"></i>
+                                    @(item.IsCompleted ? "Completed" : "Pending")
+                                </span>
+                            </div>
+
+                            <h6 class="card-subtitle mb-3 text-muted">
+                                <i class="bi bi-building me-1"></i>
+                                @((item.Listing?.Address) ?? "Unassigned Property")
+                            </h6>
+
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <p class="card-text mb-0 small text-muted">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    @item.ScheduledDate.ToLongDateString()
+                                </p>
+                                
+                                <button class="btn btn-outline-primary btn-sm px-3" 
+                                        @onclick='() => Navigation.NavigateTo($"/maintenance/edit/{currentId}")'>
+                                    Edit Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
+<style>
+    .border-dashed { border: 2px dashed #dee2e6; }
+</style>
+
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private List<MaintenanceRequest>? maintenanceRequests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        var userId = UserManager.GetUserId(authState.User);
+
+        if (userId != null)
+        {
+            // Fetch ONLY records belonging to this user
+            maintenanceRequests = await _context.MaintenanceRequests
+                .Include(m => m.Listing) // Include listing details for the subtitle
+                .Where(m => m.OwnerId == userId)
+                .OrderBy(m => m.IsCompleted)
+                .ThenBy(m => m.ScheduledDate)
+                .ToListAsync();
+        }
+    }
+
     void CreateNew() => Navigation.NavigateTo("/maintenance/edit/0");
 }

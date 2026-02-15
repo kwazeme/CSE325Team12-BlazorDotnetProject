@@ -1,8 +1,15 @@
 @page "/maintenance/edit/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
 @rendermode InteractiveServer
 @inject MaintenanceService Service
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize]
 
 <div class="container mt-4 pb-5">
     <div class="row justify-content-center">
@@ -34,14 +41,12 @@
                 <div class="card-body p-4 p-md-5">
                     <EditForm Model="Request" OnValidSubmit="Save" FormName="MaintenanceForm">
                         <DataAnnotationsValidator />
-                        
-                        @* Custom Error Alert Section *@
                         <ValidationSummary class="alert alert-danger d-flex align-items-center py-2" role="alert" />
 
                         <div class="row g-4">
                             @* --- Section 1: Property & Timing --- *@
                             <div class="col-12">
-                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2">Location & Schedule</h6>
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2 text-primary">Location & Schedule</h6>
                             </div>
 
                             <div class="col-md-7">
@@ -50,9 +55,9 @@
                                     <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
                                     <InputSelect @bind-Value="Request.ListingId" class="form-select border-start-0">
                                         <option value="0">-- Select Listing --</option>
-                                        @foreach (var listing in _context.Listings)
+                                        @foreach (var listing in listings)
                                         {
-                                            <option value="@listing.Id">@listing.Title (@listing.Address)</option>
+                                            <option value="@listing.Id">@listing.Address</option>
                                         }
                                     </InputSelect>
                                 </div>
@@ -68,20 +73,19 @@
 
                             @* --- Section 2: Issue Details --- *@
                             <div class="col-12 mt-5">
-                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2">Issue Details</h6>
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2 text-primary">Issue Details</h6>
                             </div>
 
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Issue Title</label>
                                 <InputText @bind-Value="Request.Title" class="form-control form-control-lg bg-light-subtle" 
                                            placeholder="Short summary of the problem..." />
-                                <div class="form-text">Keep it brief (e.g., 'Broken dishwasher', 'Lawn maintenance')</div>
                             </div>
 
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Detailed Instructions / Description</label>
                                 <InputTextArea @bind-Value="Request.Description" class="form-control" rows="5" 
-                                               placeholder="Describe the issue in detail. If applicable, mention if the tenant needs to be home or if you have a key." />
+                                               placeholder="Describe the issue in detail..." />
                             </div>
 
                             @* --- Section 3: Status --- *@
@@ -94,7 +98,7 @@
                                                 <label class="form-check-label fw-bold d-block" for="completeCheck">
                                                     @(Request.IsCompleted ? "Job Completed" : "Job In-Progress")
                                                 </label>
-                                                <small class="text-muted">Toggle this once the maintenance task has been verified as finished.</small>
+                                                <small class="text-muted">Toggle this once finished.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -102,7 +106,6 @@
                             </div>
                         </div>
 
-                        @* --- Sticky-style Footer for Buttons --- *@
                         <div class="border-top mt-5 pt-4 d-flex justify-content-between align-items-center">
                             <button type="button" class="btn btn-link text-muted text-decoration-none" @onclick='() => Navigation.NavigateTo("/maintenance")'>
                                 <i class="bi bi-x-circle me-1"></i> Discard Changes
@@ -126,36 +129,63 @@
     </div>
 </div>
 
-<style>
-    /* Subtle touch-ups */
-    .form-select:focus, .form-control:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-    }
-    .input-group-text {
-        color: #6c757d;
-    }
-    .bg-light-subtle {
-        background-color: #f8f9fa !important;
-    }
-</style>
-
 @code {
-    [Parameter] public int Id { get; set; }
-    private MaintenanceRequest Request { get; set; } = new();
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    protected override void OnInitialized()
+    [Parameter] public int Id { get; set; }
+    private MaintenanceRequest Request { get; set; } = new() { ScheduledDate = DateTime.Today };
+    private List<Listing> listings = new();
+
+    protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateTask;
+        var userId = UserManager.GetUserId(authState.User);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            Navigation.NavigateTo("/Account/Login");
+            return;
+        }
+
+        // Filter listings so they only see THEIR properties in the dropdown
+        listings = await _context.Listings.Where(l => l.OwnerId == userId).ToListAsync();
+
         if (Id != 0)
         {
-            var existing = Service.GetById(Id);
-            if (existing != null) Request = existing;
+            // Security check: Find request by ID AND OwnerId
+            var existing = await _context.MaintenanceRequests
+                .FirstOrDefaultAsync(r => r.Id == Id && r.OwnerId == userId);
+
+            if (existing == null)
+            {
+                // Unauthorized access or record doesn't exist
+                Navigation.NavigateTo("/maintenance");
+            }
+            else
+            {
+                Request = existing;
+            }
+        }
+        else
+        {
+            // For new records, pre-assign the owner
+            Request.OwnerId = userId;
         }
     }
 
-    void Save()
+    async Task Save()
     {
-        Service.Save(Request);
+        // Re-verify OwnerId before saving
+        var authState = await AuthenticationStateTask;
+        Request.OwnerId = UserManager.GetUserId(authState.User);
+
+        if (Id == 0)
+            _context.MaintenanceRequests.Add(Request);
+        else
+            _context.MaintenanceRequests.Update(Request);
+
+        await _context.SaveChangesAsync();
         Navigation.NavigateTo("/maintenance");
     }
 }
