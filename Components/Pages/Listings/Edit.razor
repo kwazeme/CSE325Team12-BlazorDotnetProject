@@ -1,38 +1,109 @@
 @page "/listings/edit/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
 @attribute [Authorize]
 
-<h3>Edit Listing</h3>
+<div class="container mt-4 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            @* --- Header & Back Navigation --- *@
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pencil-square text-warning me-2"></i>Edit Property Listing
+                    </h3>
+                    <p class="text-muted small">Update the address, property type, or rental valuation.</p>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo("/listings")'>
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </button>
+            </div>
 
-<EditForm Model="listing" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <EditForm Model="listing" OnValidSubmit="HandleValidSubmit" FormName="EditListingForm">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger py-2 mb-4" />
 
-    <div class="mb-2">
-        <label>Address</label>
-        <InputText class="form-control" @bind-Value="listing.Address" />
-    </div>
-    <div class="mb-2">
-        <label>City</label>
-        <InputText class="form-control" @bind-Value="listing.City" />
-    </div>
-    <div class="mb-2">
-        <label>State</label>
-        <InputText class="form-control" @bind-Value="listing.State" />
-    </div>
-    <div class="mb-2">
-        <label>Listing Type</label>
-        <InputText class="form-control" @bind-Value="listing.ListingType" />
-    </div>
-    <div class="mb-2">
-        <label>Rent Amount</label>
-        <InputNumber class="form-control" @bind-Value="listing.RentAmount" />
-    </div>
+                        @* Hidden tracking fields *@
+                        <input type="hidden" value="@listing.Id" />
+                        <input type="hidden" value="@listing.OwnerId" />
 
-    <button class="btn btn-primary" type="submit">Save</button>
-</EditForm>
+                        <div class="row g-3">
+                            @* --- Location Section --- *@
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2 text-primary">Location Details</h6>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Street Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-geo"></i></span>
+                                    <InputText class="form-control" @bind-Value="listing.Address" />
+                                </div>
+                                <ValidationMessage For="@(() => listing.Address)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">City</label>
+                                <InputText class="form-control" @bind-Value="listing.City" />
+                                <ValidationMessage For="@(() => listing.City)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">State / Province</label>
+                                <InputText class="form-control" @bind-Value="listing.State" />
+                                <ValidationMessage For="@(() => listing.State)" class="text-danger small" />
+                            </div>
+
+                            @* --- Listing Section --- *@
+                            <div class="col-12 mt-4">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2 text-primary">Property Information</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Listing Type</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-houses"></i></span>
+                                    <InputText class="form-control" @bind-Value="listing.ListingType" placeholder="e.g. Single Family, Condo" />
+                                </div>
+                                <ValidationMessage For="@(() => listing.ListingType)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Monthly Rent</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light fw-bold">$</span>
+                                    <InputNumber class="form-control" @bind-Value="listing.RentAmount" />
+                                </div>
+                                <ValidationMessage For="@(() => listing.RentAmount)" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        @* --- Footer Buttons --- *@
+                        <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                            <button type="button" class="btn btn-light px-4" @onclick='() => Navigation.NavigateTo("/listings")'>
+                                Discard Changes
+                            </button>
+                            <button type="submit" class="btn btn-warning px-5 shadow-sm fw-bold">
+                                <i class="bi bi-check-circle me-2"></i>Update Listing
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+            <p class="text-center text-muted mt-3 small">Property Reference ID: #@Id</p>
+        </div>
+    </div>
+</div>
 
 @code {
     [CascadingParameter]
@@ -44,6 +115,7 @@
     protected override async Task OnInitializedAsync()
     {
         var userId = await GetUserIdAsync();
+        
         listing = await _context.Listings
             .Where(l => l.OwnerId == userId && l.Id == Id)
             .FirstOrDefaultAsync() ?? new Listing();
