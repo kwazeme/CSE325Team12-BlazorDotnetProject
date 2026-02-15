@@ -18,10 +18,15 @@
 
 * https://github.com/kwazeme/CSE325Team12-BlazorDotnetProject/tree/main
 * https://trello.com/b/qziw0QeC/cse325-netsoftwaredevelopment
-* Azure URL:
+* Azure URL: https://thankful-mushroom-027b7d610.1.azurestaticapps.net/
 
-### Report on Individual Taks 
+### Report on Individual Taks
 
 * The Tenant \/ Listing/Leases CRUD is not navigating. [Julius]
 * Database new migrations for MiantenanceRequest [Kwazeme]
+* Working on Leasing CRUD [asigned: ALL]
+* Working on Listing CRUD [asigned: ALL]
+* Fixed Tenant CRUD - UI changes [completed by Kwazeeme]
+* Overal UI changes app wide [competed by Julius]
+* Deployment troubleshoot [assigned: ALL]
 *
