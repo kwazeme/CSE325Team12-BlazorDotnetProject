@@ -3,15 +3,24 @@
 ### Attendance:
 
 * Kwazeme Ogubie - develop-01
+<<<<<<< HEAD
 * Julius Songopa - develop-04
+=======
+<!-- * Ndarama Mark - develop-02
+* Ferrin Armstrong Mutuku - develop-03
+* Julius Yohanes Songopa - develop-04
+* Emmanuel Nzeh - develop-05 -->
+
+*
+>>>>>>> 090c7690de4c9e9c4f9667c1900af953e0ef0d9d
 
 ### Brief Summary:
 
 * We started with an opening prayer [Kwazeme]
-* Worked through some the issues and fixed completed the maintenanceRequest razor pages
-* fixed the CSS bootstrap issues
+* Worked through some the issues and completed the CRUD and Schema Migrations using razor
+* fixed the overlay issues
 * updated migrations and database
-* working on branch develop-01
+* working on branch propertyhub - develop - 05
 
 ### Working Project url
 
@@ -20,6 +29,5 @@
 
 ### Project Task
 
-* The Maintenance CRUD is still not updating when edited or a new MaintenanceRequest is logged.
-* It throws and error that says it needs to know which form to update and that the form shouls have a @formname. I added this card on the project board and will work on fixing it.
-*
+* As of now there is no sample data seeded for Tenants, Listings, Leases, and MaintenanceRequests. Our Project only defines the schemas (models + migrations).
+* I plan using a Dbinitializer that seeds on startup. This approach is easier to use and we can refresh data quickly.
