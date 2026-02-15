@@ -1,20 +1,141 @@
 @page "/leases/details/{Id:int}"
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
 @inject ApplicationDbContext _context
 @inject UserManager<ApplicationUser> UserManager
-@rendermode InteractiveServer
 @inject NavigationManager Navigation
+
+@rendermode InteractiveServer
 @attribute [Authorize]
 
-<h3>Lease Details</h3>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            
+            @* --- Top Navigation & Title --- *@
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold text-dark mb-0">Lease Agreement</h3>
+                <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo("/leases")'>
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </button>
+            </div>
 
-<div>
-    <p><strong>Listing:</strong> @lease?.Listing?.Address</p>
-    <p><strong>Tenant:</strong> @lease?.Tenant?.Name</p>
-    <p><strong>Start Date:</strong> @lease?.StartDate.ToShortDateString()</p>
-    <p><strong>End Date:</strong> @lease?.EndDate.ToShortDateString()</p>
+            @if (lease == null)
+            {
+                <div class="text-center mt-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Fetching lease record...</p>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm border-0">
+                    @* --- Status Header --- *@
+                    <div class="card-header bg-white border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small text-uppercase fw-bold">Record ID</span>
+                                <h5 class="mb-0">#@lease.Id</h5>
+                            </div>
+                            @{
+                                var today = DateTime.Today;
+                                var isExpired = today > lease.EndDate;
+                                var isUpcoming = today < lease.StartDate;
+                            }
+                            @if (isExpired)
+                            {
+                                <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle">
+                                    <i class="bi bi-exclamation-octagon me-1"></i> Expired
+                                </span>
+                            }
+                            else if (isUpcoming)
+                            {
+                                <span class="badge bg-info-subtle text-info px-3 py-2 border border-info-subtle">
+                                    <i class="bi bi-calendar-event me-1"></i> Upcoming
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success-subtle text-success px-3 py-2 border border-success-subtle">
+                                    <i class="bi bi-check-circle me-1"></i> Active Contract
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    @* --- Main Content --- *@
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            @* Property Info *@
+                            <div class="col-md-6 border-end">
+                                <label class="text-muted small text-uppercase fw-bold">Property Details</label>
+                                <div class="d-flex align-items-start mt-2">
+                                    <i class="bi bi-house-door fs-4 text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">@lease.Listing?.Title</h6>
+                                        <p class="text-muted small mb-0">@lease.Listing?.Address</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* Tenant Info *@
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Tenant Assigned</label>
+                                <div class="d-flex align-items-start mt-2">
+                                    <i class="bi bi-person-badge fs-4 text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">@lease.Tenant?.Name</h6>
+                                        <p class="text-muted small mb-0">@lease.Tenant?.Email</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* Date Timeline Section *@
+                            <div class="col-12 mt-4">
+                                <div class="bg-light rounded-3 p-4">
+                                    <label class="text-muted small text-uppercase fw-bold d-block mb-3 text-center">Lease Timeline</label>
+                                    <div class="d-flex justify-content-between align-items-center position-relative px-md-5">
+                                        <div class="text-center" style="z-index: 2;">
+                                            <div class="bg-white border border-primary rounded-circle p-2 mb-2 mx-auto" style="width: 45px;">
+                                                <i class="bi bi-calendar-check text-primary"></i>
+                                            </div>
+                                            <small class="text-muted d-block">Start Date</small>
+                                            <span class="fw-bold">@lease.StartDate.ToLongDateString()</span>
+                                        </div>
+
+                                        @* Visual line between dates *@
+                                        <div class="flex-grow-1 border-top border-2 border-primary-subtle mx-3 mt-n4 d-none d-md-block" style="z-index: 1;"></div>
+
+                                        <div class="text-center" style="z-index: 2;">
+                                            <div class="bg-white border border-danger rounded-circle p-2 mb-2 mx-auto" style="width: 45px;">
+                                                <i class="bi bi-calendar-x text-danger"></i>
+                                            </div>
+                                            <small class="text-muted d-block">End Date</small>
+                                            <span class="fw-bold">@lease.EndDate.ToLongDateString()</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- Action Footer --- *@
+                    <div class="card-footer bg-white border-top-0 p-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-outline-warning px-4" @onclick='() => Navigation.NavigateTo($"/leases/edit/{Id}")'>
+                                <i class="bi bi-pencil me-1"></i> Edit Agreement
+                            </button>
+                            <button class="btn btn-primary px-4" @onclick='() => Navigation.NavigateTo("/leases")'>
+                                <i class="bi bi-list-ul me-1"></i> View All Leases
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>
-
-<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/leases")'>Back</button>
 
 @code {
     [CascadingParameter]
@@ -39,4 +160,3 @@
         return UserManager.GetUserId(authState.User);
     }
 }
-  

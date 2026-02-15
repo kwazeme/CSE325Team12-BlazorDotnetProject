@@ -1,49 +1,120 @@
 @page "/leases/edit/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
+
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
 @inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
 @attribute [Authorize]
 
-<h3>Edit Lease</h3>
+<div class="container mt-4 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            @* --- Header Section --- *@
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Lease Agreement
+                    </h3>
+                    <p class="text-muted small">Update contract terms, dates, or tenant assignments for this record.</p>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo("/leases")'>
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </button>
+            </div>
 
-<EditForm Model="lease" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <EditForm Model="lease" OnValidSubmit="HandleValidSubmit" FormName="edit-lease-form">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger py-2 mb-4" />
 
-    <div class="mb-2">
-        <label>Listing</label>
-        <InputSelect class="form-control" @bind-Value="lease.ListingId">
-            <option value="">-- Select Listing --</option>
-            @foreach (var l in listings)
-            {
-                <option value="@l.Id">@l.Address</option>
-            }
-        </InputSelect>
+                        @* Hidden fields to ensure EF tracking stays clean *@
+                        <input type="hidden" value="@lease.Id" />
+                        <input type="hidden" value="@lease.OwnerId" />
+
+                        <div class="row g-4">
+                            @* --- Section 1: Agreement Parties --- *@
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2 text-primary">Agreement Parties</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Listing / Property</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-house-door"></i></span>
+                                    <InputSelect class="form-select" @bind-Value="lease.ListingId">
+                                        <option value="">-- Select Listing --</option>
+                                        @foreach (var l in listings)
+                                        {
+                                            <option value="@l.Id">@l.Address</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => lease.ListingId)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Assigned Tenant</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                                    <InputSelect class="form-select" @bind-Value="lease.TenantId">
+                                        <option value="">-- Select Tenant --</option>
+                                        @foreach (var t in tenants)
+                                        {
+                                            <option value="@t.Id">@t.Name</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => lease.TenantId)" />
+                            </div>
+
+                            @* --- Section 2: Duration --- *@
+                            <div class="col-12 mt-5">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2 text-primary">Contract Duration</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Start Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-calendar-check"></i></span>
+                                    <InputDate class="form-control" @bind-Value="lease.StartDate" />
+                                </div>
+                                <ValidationMessage For="@(() => lease.StartDate)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">End Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-calendar-x"></i></span>
+                                    <InputDate class="form-control" @bind-Value="lease.EndDate" />
+                                </div>
+                                <ValidationMessage For="@(() => lease.EndDate)" />
+                            </div>
+                        </div>
+
+                        @* --- Action Buttons --- *@
+                        <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                            <button type="button" class="btn btn-light px-4" @onclick='() => Navigation.NavigateTo("/leases")'>
+                                Discard Changes
+                            </button>
+                            <button type="submit" class="btn btn-warning px-5 shadow-sm fw-bold">
+                                <i class="bi bi-save me-2"></i>Update Lease
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+            
+            <p class="text-center text-muted mt-3 small">Last modified record ID: #@Id</p>
+        </div>
     </div>
-
-    <div class="mb-2">
-        <label>Tenant</label>
-        <InputSelect class="form-control" @bind-Value="lease.TenantId">
-            <option value="">-- Select Tenant --</option>
-            @foreach (var t in tenants)
-            {
-                <option value="@t.Id">@t.Name</option>
-            }
-        </InputSelect>
-    </div>
-
-    <div class="mb-2">
-        <label>Start Date</label>
-        <InputDate class="form-control" @bind-Value="lease.StartDate" />
-    </div>
-
-    <div class="mb-2">
-        <label>End Date</label>
-        <InputDate class="form-control" @bind-Value="lease.EndDate" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Save</button>
-</EditForm>
+</div>
 
 @code {
     [CascadingParameter]
@@ -57,17 +128,21 @@
     protected override async Task OnInitializedAsync()
     {
         var userId = await GetUserIdAsync();
+        
+        // Fetch the lease and ensure it belongs to the user
         lease = await _context.Leases
             .Where(l => l.OwnerId == userId && l.Id == Id)
             .FirstOrDefaultAsync() ?? new Lease();
 
-        listings = await _context.Listings.Where(l => l.OwnerId == userId).ToListAsync();
-        tenants = await _context.Tenants.Where(t => t.OwnerId == userId).ToListAsync();
-
+        // Security check: If not found or not owner, redirect
         if (lease.Id == 0)
         {
             Navigation.NavigateTo("/leases");
+            return;
         }
+
+        listings = await _context.Listings.Where(l => l.OwnerId == userId).ToListAsync();
+        tenants = await _context.Tenants.Where(t => t.OwnerId == userId).ToListAsync();
     }
 
     private async Task HandleValidSubmit()

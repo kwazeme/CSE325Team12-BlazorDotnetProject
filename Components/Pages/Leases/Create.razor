@@ -1,70 +1,158 @@
 @page "/leases/create"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PropertyHub.Data
+
 @inject ApplicationDbContext _context
 @inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
 
 @rendermode InteractiveServer
-@inject UserManager<ApplicationUser> UserManager
 @attribute [Authorize]
 
-<h3>Create Lease</h3>
+<div class="container mt-4 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-file-earmark-text me-2 text-primary"></i>New Lease Agreement
+                    </h3>
+                    <p class="text-muted small">Connect a tenant to a property and set the contract duration.</p>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo("/leases")'>
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </button>
+            </div>
 
-<EditForm Model="lease" OnValidSubmit="HandleValidSubmit" FormName="create-lease-form">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    @* Use EditContext to manage state if needed, or stick to Model for simple forms *@
+                    <EditForm Model="lease" OnValidSubmit="HandleValidSubmit" FormName="create-lease-form">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger py-2 mb-4" />
 
-    <div class="mb-2">
-        <label>Listing</label>
-        <InputSelect class="form-control" @bind-Value="lease.ListingId">
-            <option value="">-- Select Listing --</option>
-            @foreach (var l in listings)
-            {
-                <option value="@l.Id">@l.Address</option>
-            }
-        </InputSelect>
+                        @* Hidden field for OwnerId to ensure it's part of the form state *@
+                        <input type="hidden" value="@lease.OwnerId" />
+
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2">Agreement Parties</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Select Property</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-house-door"></i></span>
+                                    <InputSelect class="form-select" @bind-Value="lease.ListingId">
+                                        <option value="0">-- Choose Listing --</option>
+                                        @foreach (var l in listings)
+                                        {
+                                            <option value="@l.Id">@l.Address</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => lease.ListingId)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Assign Tenant</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                                    <InputSelect class="form-select" @bind-Value="lease.TenantId">
+                                        <option value="0">-- Choose Tenant --</option>
+                                        @foreach (var t in tenants)
+                                        {
+                                            <option value="@t.Id">@t.Name</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => lease.TenantId)" />
+                            </div>
+
+                            <div class="col-12 mt-5">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3 border-bottom pb-2">Contract Duration</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Start Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-calendar-check"></i></span>
+                                    <InputDate class="form-control" @bind-Value="lease.StartDate" />
+                                </div>
+                                <ValidationMessage For="@(() => lease.StartDate)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">End Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-calendar-x"></i></span>
+                                    <InputDate class="form-control" @bind-Value="lease.EndDate" />
+                                </div>
+                                <ValidationMessage For="@(() => lease.EndDate)" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                            <button type="button" class="btn btn-light px-4" @onclick='() => Navigation.NavigateTo("/leases")'>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm fw-bold">
+                                <i class="bi bi-check-lg me-2"></i>Create Lease
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-2">
-        <label>Tenant</label>
-        <InputSelect class="form-control" @bind-Value="lease.TenantId">
-            <option value="">-- Select Tenant --</option>
-            @foreach (var t in tenants)
-            {
-                <option value="@t.Id">@t.Name</option>
-            }
-        </InputSelect>
-    </div>
-
-    <div class="mb-2">
-        <label>Start Date</label>
-        <InputDate class="form-control" @bind-Value="lease.StartDate" />
-    </div>
-
-    <div class="mb-2">
-        <label>End Date</label>
-        <InputDate class="form-control" @bind-Value="lease.EndDate" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Save</button>
-</EditForm>
+</div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    private Lease lease = new Lease();
+    private Lease lease = new Lease 
+    { 
+        StartDate = DateTime.Today, 
+        EndDate = DateTime.Today.AddYears(1),
+        OwnerId = "" // Initialize to avoid null reference issues
+    };
+
     private List<Listing> listings = new();
     private List<Tenant> tenants = new();
 
     protected override async Task OnInitializedAsync()
     {
+        // 1. Get the Current User ID immediately on load
         var userId = await GetUserIdAsync();
-        listings = await _context.Listings.Where(l => l.OwnerId == userId).ToListAsync();
-        tenants = await _context.Tenants.Where(t => t.OwnerId == userId).ToListAsync();
+        
+        if (userId != null)
+        {
+            // 2. Pre-populate the OwnerId field
+            lease.OwnerId = userId;
+
+            // 3. Filter dropdowns by the current owner
+            listings = await _context.Listings
+                .Where(l => l.OwnerId == userId)
+                .ToListAsync();
+
+            tenants = await _context.Tenants
+                .Where(t => t.OwnerId == userId)
+                .ToListAsync();
+        }
     }
 
     private async Task HandleValidSubmit()
     {
-        lease.OwnerId = await GetUserIdAsync();
+        // Double check OwnerId isn't lost during form post
+        if (string.IsNullOrEmpty(lease.OwnerId))
+        {
+            lease.OwnerId = await GetUserIdAsync() ?? "";
+        }
+
         _context.Leases.Add(lease);
         await _context.SaveChangesAsync();
         Navigation.NavigateTo("/leases");
