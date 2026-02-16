@@ -178,7 +178,7 @@
     {
         // Re-verify OwnerId before saving
         var authState = await AuthenticationStateTask;
-        Request.OwnerId = UserManager.GetUserId(authState.User);
+        Request.OwnerId = UserManager?.GetUserId(authState.User);
 
         if (Id == 0)
             _context.MaintenanceRequests.Add(Request);
